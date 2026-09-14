@@ -1,289 +1,434 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>رافع الفيديوهات السريع | B2 Stream</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- مكتبة AWS S3 الرسمية للرفع المباشر عبر أجزاء متوازية لسرعة قصوى -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1585.0/aws-sdk.min.js"></script>
-
-  <style>
-    :root {
-      --bg-1: #020617;
-      --accent: #8b5cf6;
-      --accent-hover: #a855f7;
-      --card-bg: rgba(15, 23, 42, 0.85);
-      --border: rgba(255, 255, 255, 0.1);
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-
-    body {
-      background: radial-gradient(circle at top, #1e1b4b, var(--bg-1));
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-
-    .container {
-      background: var(--card-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 24px;
-      width: 100%;
-      max-width: 480px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .header { text-align: center; }
-    .header h2 { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
-    .header p { font-size: 0.85rem; color: var(--text-muted); }
-
-    .drop-zone {
-      border: 2px dashed rgba(139, 92, 246, 0.5);
-      border-radius: 18px;
-      padding: 35px 15px;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.3s;
-      background: rgba(0,0,0,0.3);
-    }
-    .drop-zone:hover {
-      border-color: var(--accent);
-      background: rgba(139, 92, 246, 0.15);
-      transform: scale(1.01);
-    }
-    .drop-zone i { font-size: 3rem; color: var(--accent); margin-bottom: 12px; }
-    .drop-zone h3 { font-size: 1.05rem; margin-bottom: 4px; }
-    .drop-zone span { font-size: 0.8rem; color: var(--text-muted); }
-
-    .file-info {
-      display: none;
-      background: rgba(0,0,0,0.4);
-      padding: 14px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      font-size: 0.85rem;
-    }
-    .progress-bar-wrap {
-      width: 100%;
-      height: 10px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 8px;
-      overflow: hidden;
-      margin-top: 10px;
-    }
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #8b5cf6, #d946ef);
-      transition: width 0.2s ease;
-    }
-
-    button.btn {
-      background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
-      border: none;
-      color: #fff;
-      padding: 14px 20px;
-      border-radius: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-size: 1rem;
-      transition: 0.3s;
-      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
-    }
-    button.btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
-    button.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-
-    .result-box {
-      display: none;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      border-radius: 16px;
-      padding: 16px;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .result-box span { color: #10b981; font-weight: 800; font-size: 0.9rem; }
-    .result-input-group { display: flex; gap: 8px; }
-    .result-input-group input {
-      flex: 1;
-      background: rgba(0,0,0,0.6);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: #fff;
-      padding: 10px 12px;
-      font-size: 0.85rem;
-      direction: ltr;
-      outline: none;
-    }
-    .btn-copy {
-      background: #10b981;
-      border: none;
-      color: #fff;
-      padding: 10px 16px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .btn-copy:hover { filter: brightness(1.1); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Video Cloud - إدارة ورفع الفيديو السريع</title>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1408.0.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+        body { font-family: 'Cairo', sans-serif; }
+    </style>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8">
 
-  <div class="container">
-    <div class="header">
-      <h2><i class="fa-solid fa-cloud-arrow-up" style="color:var(--accent); margin-left: 6px;"></i> رافع الفيديوهات المباشر</h2>
-      <p>ارفع فيديوهاتك (حتى 2GB) واحصل على رابط بث فائق السرعة لموقعك</p>
+    <div class="max-w-4xl mx-auto space-y-6">
+
+        <!-- الهيدر -->
+        <header class="flex items-center justify-between bg-slate-900/80 border border-slate-800 backdrop-blur-md p-5 rounded-2xl shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600/20 text-blue-400 p-3 rounded-xl border border-blue-500/30">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-white">منصة رفع الفيديو الفائق</h1>
+                    <p class="text-xs text-slate-400 font-medium">مربوط مباشرة بـ Backblaze B2 السريع</p>
+                </div>
+            </div>
+            <button onclick="fetchBucketFiles()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-xl transition flex items-center gap-1.5 border border-slate-700">
+                <i class="fa-solid fa-rotate"></i>
+                <span>تحديث القائمة</span>
+            </button>
+        </header>
+
+        <!-- منطقة الرفع المتقدمة -->
+        <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md p-6 rounded-2xl shadow-xl space-y-5">
+            
+            <!-- الصندوق المخصص لاختيار الملف بتصميم السحب والإفلات -->
+            <label id="dropZone" class="relative flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-2xl p-6 md:p-8 cursor-pointer transition bg-slate-950/40 group">
+                <input type="file" id="fileInput" accept="video/*" class="hidden" onchange="onFileSelected(this)">
+                <div class="w-14 h-14 bg-blue-600/10 text-blue-500 flex items-center justify-center rounded-2xl mb-3 group-hover:scale-110 transition duration-300">
+                    <i class="fa-solid fa-film text-2xl"></i>
+                </div>
+                <p id="fileNameDisplay" class="font-bold text-slate-300 text-sm md:text-base text-center">اضغط لاختيار فيديو أو اسحبه هنا مباشرة</p>
+                <p id="fileSizeDisplay" class="text-xs text-slate-500 mt-1">جميع صيغ الفيديو مدعومة (MP4, MKV, MOV...)</p>
+            </label>
+
+            <!-- أزرار التحكم في الرفع -->
+            <div class="flex flex-wrap gap-3">
+                <button id="startBtn" onclick="initiateUpload()" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>بدء الرفع فائق السرعة</span>
+                </button>
+                <button id="pauseBtn" onclick="togglePauseResume()" class="hidden bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-5 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-pause"></i>
+                    <span id="pauseBtnText">إيقاف مؤقت</span>
+                </button>
+                <button id="cancelBtn" onclick="abortUpload()" class="hidden bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 font-bold py-3 px-5 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-xmark"></i>
+                    <span>إلغاء</span>
+                </button>
+            </div>
+
+            <!-- بطاقة تقدم الرفع والمؤشرات الحسابية -->
+            <div id="uploadStatusCard" class="hidden bg-slate-950/70 border border-slate-800/80 rounded-xl p-5 space-y-4">
+                <div class="flex justify-between items-center text-sm">
+                    <span id="statusBadge" class="px-2.5 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                        جاري الرفع المتوازي...
+                    </span>
+                    <span id="percentageBadge" class="font-extrabold text-blue-400 text-base">0%</span>
+                </div>
+
+                <!-- شريط النسبة -->
+                <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                    <div id="progressFill" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full transition-all duration-200" style="width: 0%"></div>
+                </div>
+
+                <!-- الإحصائيات الدقيقة -->
+                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div class="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800/80">
+                        <span class="text-slate-500 block mb-0.5">الحجم المرفوع</span>
+                        <span id="statSize" class="font-bold text-slate-200">0 / 0 MB</span>
+                    </div>
+                    <div class="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800/80">
+                        <span class="text-slate-500 block mb-0.5">السرعة الآن</span>
+                        <span id="statSpeed" class="font-bold text-emerald-400">0 MB/s</span>
+                    </div>
+                    <div class="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800/80">
+                        <span class="text-slate-500 block mb-0.5">الوقت المتبقي</span>
+                        <span id="statTime" class="font-bold text-indigo-400">--:--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- بطاقة إتمام الرفع مع الرابط المباشر -->
+            <div id="successCard" class="hidden bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-4 space-y-3">
+                <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                    <i class="fa-solid fa-circle-check text-lg"></i>
+                    <span>تم رفع الفيديو وتوليد الرابط المباشر بنجاح!</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="latestUrlInput" readonly class="flex-1 bg-slate-900 border border-emerald-500/40 rounded-xl px-3 py-2 text-xs font-mono text-emerald-200 select-all focus:outline-none" dir="ltr">
+                    <button onclick="copyToClipboard(document.getElementById('latestUrlInput').value)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-md">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>نسخ</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- قائمة الفيديوهات المخزنة في الـ Bucket -->
+        <div class="bg-slate-900/60 border border-slate-800 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                <div class="flex items-center gap-2 font-bold text-slate-200">
+                    <i class="fa-solid fa-folder-open text-blue-500"></i>
+                    <span>الفيديوهات المخزنة بالباكت</span>
+                </div>
+                <span id="filesCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-full font-mono">0 ملف</span>
+            </div>
+
+            <div id="filesContainer" class="p-4 space-y-2.5 max-h-96 overflow-y-auto">
+                <div class="text-center py-8 text-slate-500 text-sm">
+                    <i class="fa-solid fa-spinner fa-spin text-xl mb-2 block"></i>
+                    جاري تحميل محتويات الـ Bucket...
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- منطقة اختيار الفيديو -->
-    <div class="drop-zone" id="dropZone" onclick="document.getElementById('videoFile').click()">
-      <i class="fa-solid fa-file-video"></i>
-      <h3>اضغط لاختيار فيديو من الاستوديو</h3>
-      <span>يدعم MP4, MKV, WebM بأي حجم</span>
-      <input type="file" id="videoFile" accept="video/*" style="display:none" onchange="onFileSelected(this.files[0])">
-    </div>
+    <!-- رسالة إشعار سريعة (Toast) -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-2xl transition duration-300 opacity-0 pointer-events-none translate-y-3"></div>
 
-    <!-- كارت حالة الملف وشريط التقدم -->
-    <div class="file-info" id="fileInfo">
-      <div style="display:flex; justify-content:space-between;">
-        <span id="fileName" style="font-weight:bold; max-width:70%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">-</span>
-        <span id="fileSize" style="color:var(--text-muted);">-</span>
-      </div>
-      <div class="progress-bar-wrap">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
-      <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:0.75rem; color:var(--text-muted);">
-        <span id="uploadPercent">0%</span>
-        <span id="uploadSpeed">-</span>
-      </div>
-    </div>
+    <script>
+        // ضبط بيانات B2 مع S3 Compatibility
+        const S3_CONFIG = {
+            bucketName: 'Withsomy1436',
+            endpoint: 's3.eu-central-003.backblazeb2.com',
+            accessKeyId: '003b9989b651dde0000000004',
+            secretAccessKey: 'K003mj59bmEZWT4lGbLX5V2KZKO+4uE',
+            region: 'eu-central-003'
+        };
 
-    <button class="btn" id="uploadBtn" onclick="startUpload()" disabled>
-      <i class="fa-solid fa-bolt"></i> بدء الرفع السريع
-    </button>
+        AWS.config.update({
+            accessKeyId: S3_CONFIG.accessKeyId,
+            secretAccessKey: S3_CONFIG.secretAccessKey,
+            region: S3_CONFIG.region,
+            endpoint: new AWS.Endpoint('https://' + S3_CONFIG.endpoint),
+            httpOptions: { timeout: 0 }
+        });
 
-    <!-- صندوق النتيجة بعد اكتمال الرفع -->
-    <div class="result-box" id="resultBox">
-      <span><i class="fa-solid fa-circle-check"></i> تم رفع الفيديو بنجاح!</span>
-      <div class="result-input-group">
-        <input type="text" id="streamUrl" readonly>
-        <button class="btn-copy" onclick="copyStreamUrl()"><i class="fa-regular fa-copy"></i> نسخ</button>
-      </div>
-    </div>
-  </div>
+        const s3 = new AWS.S3({ params: { Bucket: S3_CONFIG.bucketName } });
 
-  <script>
-    // ⚙️ البيانات الخاصة بمستودعك (تم حقنها وتفعيلها بالكامل)
-    const B2_CONFIG = {
-      endpoint: "s3.eu-central-003.backblazeb2.com",
-      region: "eu-central-003",
-      bucketName: "Withsomy1436",
-      keyId: "003b9989b651dde0000000002",
-      applicationKey: "K003NEBgrB3s/Z7RgcXbWul0FFEA+cl"
-    };
+        // متغيرات التحكم في الرفع
+        let currentUpload = null;
+        let selectedFile = null;
+        let uploadStartTime = 0;
+        let lastLoadedBytes = 0;
+        let lastSpeedCalcTime = 0;
+        let isPaused = false;
 
-    let selectedFile = null;
-    let uploadStartTime = null;
-
-    function onFileSelected(file) {
-      if (!file) return;
-      selectedFile = file;
-      document.getElementById('fileName').innerText = file.name;
-      document.getElementById('fileSize').innerText = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
-      document.getElementById('fileInfo').style.display = 'block';
-      document.getElementById('uploadBtn').disabled = false;
-      document.getElementById('progressBar').style.width = '0%';
-      document.getElementById('uploadPercent').innerText = '0%';
-      document.getElementById('resultBox').style.display = 'none';
-    }
-
-    function startUpload() {
-      const uploadBtn = document.getElementById('uploadBtn');
-      uploadBtn.disabled = true;
-      uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الرفع...';
-
-      // تهيئة S3 Client لـ Backblaze B2
-      const s3 = new AWS.S3({
-        endpoint: new AWS.Endpoint(B2_CONFIG.endpoint),
-        accessKeyId: B2_CONFIG.keyId,
-        secretAccessKey: B2_CONFIG.applicationKey,
-        region: B2_CONFIG.region,
-        s3ForcePathStyle: true,
-        signatureVersion: 'v4'
-      });
-
-      // تنظيف اسم الملف لتفادي أي مشاكل في ترميز الروابط
-      const cleanName = Date.now() + '_' + selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-
-      const params = {
-        Bucket: B2_CONFIG.bucketName,
-        Key: cleanName,
-        Body: selectedFile,
-        ContentType: selectedFile.type || 'video/mp4'
-      };
-
-      uploadStartTime = Date.now();
-
-      // رفع الملف كأجزاء متوازية بحجم 10MB لكل جزء لسرعة فائقة
-      const managedUpload = s3.upload(params, { partSize: 10 * 1024 * 1024, queueSize: 4 });
-
-      managedUpload.on('httpUploadProgress', (evt) => {
-        const percent = Math.round((evt.loaded / evt.total) * 100);
-        document.getElementById('progressBar').style.width = percent + '%';
-        document.getElementById('uploadPercent').innerText = percent + '%';
-
-        const elapsed = (Date.now() - uploadStartTime) / 1000;
-        if (elapsed > 0) {
-          const speedMB = ((evt.loaded / (1024 * 1024)) / elapsed).toFixed(1);
-          document.getElementById('uploadSpeed').innerText = `${speedMB} MB/s`;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0', 'translate-y-3');
+            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-3'), 3000);
         }
-      });
 
-      managedUpload.send((err, data) => {
-        uploadBtn.disabled = false;
-        uploadBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> بدء الرفع السريع';
-
-        if (err) {
-          console.error(err);
-          alert('حدث خطأ أثناء الرفع: ' + err.message);
-          return;
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
         }
 
-        // صيغة الرابط المباشر للبث في مشغل Video.js
-        const finalStreamUrl = `https://${B2_CONFIG.bucketName}.${B2_CONFIG.endpoint}/${cleanName}`;
-        
-        document.getElementById('streamUrl').value = finalStreamUrl;
-        document.getElementById('resultBox').style.display = 'flex';
-      });
-    }
+        function formatSeconds(secs) {
+            if (!isFinite(secs) || secs < 0) return '--:--';
+            const m = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
 
-    function copyStreamUrl() {
-      const copyText = document.getElementById('streamUrl');
-      copyText.select();
-      copyText.setSelectionRange(0, 99999);
-      navigator.clipboard.writeText(copyText.value);
-      alert('تم نسخ الرابط! الصقه الآن في موقع المشاهدة المتزامنة 🎬');
-    }
-  </script>
+        function onFileSelected(input) {
+            if (input.files && input.files[0]) {
+                selectedFile = input.files[0];
+                document.getElementById('fileNameDisplay').innerText = selectedFile.name;
+                document.getElementById('fileSizeDisplay').innerText = formatBytes(selectedFile.size);
+            }
+        }
+
+        // الكود الجديد: أجزاء كبيرة (16MB إلى 32MB) + مسارين فقط + خوارزمية تنعيم قراءة السرعة
+        let speedSamples = [];
+
+        function initiateUpload() {
+            if (!selectedFile) {
+                showToast('يرجى اختيار ملف فيديو أولاً');
+                return;
+            }
+
+            const cleanFileName = selectedFile.name.replace(/\s+/g, '-');
+            const targetKey = 'videos/' + Date.now() + '-' + cleanFileName;
+
+            document.getElementById('uploadStatusCard').classList.remove('hidden');
+            document.getElementById('successCard').classList.add('hidden');
+            document.getElementById('startBtn').classList.add('hidden');
+            document.getElementById('pauseBtn').classList.remove('hidden');
+            document.getElementById('cancelBtn').classList.remove('hidden');
+
+            uploadStartTime = Date.now();
+            lastSpeedCalcTime = uploadStartTime;
+            lastLoadedBytes = 0;
+            isPaused = false;
+            speedSamples = [];
+
+            const uploadParams = {
+                Key: targetKey,
+                Body: selectedFile,
+                ContentType: selectedFile.type || 'video/mp4'
+            };
+
+            // حجم ذكي ومستقر للأجزاء حسب حجم الفيديو
+            const optimalPartSize = selectedFile.size > 100 * 1024 * 1024 ? 32 * 1024 * 1024 : 16 * 1024 * 1024;
+
+            const uploadOptions = {
+                partSize: optimalPartSize,
+                queueSize: 2 // مساران متوازيان فقط لمنع التنافس والاختناق
+            };
+
+            currentUpload = s3.upload(uploadParams, uploadOptions);
+
+            currentUpload.on('httpUploadProgress', (evt) => {
+                const now = Date.now();
+                const total = evt.total;
+                const loaded = evt.loaded;
+                const percent = Math.round((loaded / total) * 100);
+
+                document.getElementById('progressFill').style.width = percent + '%';
+                document.getElementById('percentageBadge').innerText = percent + '%';
+                document.getElementById('statSize').innerText = `${formatBytes(loaded)} / ${formatBytes(total)}`;
+
+                // حساب متوسط السرعة كل ثانية كاملة لضمان ثبات المؤشر
+                const timeDiff = (now - lastSpeedCalcTime) / 1000;
+                if (timeDiff >= 1.0) {
+                    const bytesDiff = loaded - lastLoadedBytes;
+                    const instantSpeed = bytesDiff / timeDiff;
+
+                    // تنعيم السرعة بحساب متوسط آخر 4 قراءات (Moving Average)
+                    speedSamples.push(instantSpeed);
+                    if (speedSamples.length > 4) speedSamples.shift();
+                    const averageSpeed = speedSamples.reduce((a, b) => a + b, 0) / speedSamples.length;
+
+                    const speedMB = (averageSpeed / (1024 * 1024)).toFixed(2);
+                    document.getElementById('statSpeed').innerText = `${speedMB} MB/s`;
+
+                    const remainingBytes = total - loaded;
+                    const etaSeconds = averageSpeed > 0 ? (remainingBytes / averageSpeed) : 0;
+                    document.getElementById('statTime').innerText = formatSeconds(etaSeconds);
+
+                    lastSpeedCalcTime = now;
+                    lastLoadedBytes = loaded;
+                }
+            });
+
+            currentUpload.send((err, data) => {
+                resetUploadUI();
+
+                if (err) {
+                    if (err.name === 'RequestAbortedError') {
+                        showToast('تم إلغاء عملية الرفع.');
+                    } else {
+                        console.error(err);
+                        alert('حدث خطأ: ' + err.message);
+                    }
+                    return;
+                }
+
+                const friendlyUrl = `https://${S3_CONFIG.bucketName}.${S3_CONFIG.endpoint}/${encodeURI(targetKey)}`;
+                document.getElementById('latestUrlInput').value = friendlyUrl;
+                document.getElementById('successCard').classList.remove('hidden');
+                showToast('اكتمل الرفع بنجاح وبسرعة مستقرة!');
+                fetchBucketFiles();
+            });
+        }
+
+
+        // إيقاف مؤقت / استئناف
+        function togglePauseResume() {
+            if (!currentUpload) return;
+            const pauseBtnText = document.getElementById('pauseBtnText');
+            const statusBadge = document.getElementById('statusBadge');
+
+            if (!isPaused) {
+                // إيقاف مؤقت عبر إيقاف طلبات الأجزاء الحالية
+                currentUpload.abort();
+                isPaused = true;
+                pauseBtnText.innerText = 'استئناف الرفع';
+                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> تم الإيقاف مؤقتاً`;
+                statusBadge.className = 'px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg text-xs font-semibold flex items-center gap-1.5';
+            } else {
+                // استئناف الرفع
+                pauseBtnText.innerText = 'إيقاف مؤقت';
+                initiateUpload();
+            }
+        }
+
+        // إلغاء الرفع
+        function abortUpload() {
+            if (currentUpload) {
+                currentUpload.abort();
+                currentUpload = null;
+            }
+            resetUploadUI();
+            document.getElementById('uploadStatusCard').classList.add('hidden');
+            showToast('تم إلغاء الرفع');
+        }
+
+        function resetUploadUI() {
+            document.getElementById('startBtn').classList.remove('hidden');
+            document.getElementById('pauseBtn').classList.add('hidden');
+            document.getElementById('cancelBtn').classList.add('hidden');
+            document.getElementById('pauseBtnText').innerText = 'إيقاف مؤقت';
+            isPaused = false;
+        }
+
+        // نسخ الرابط للحافظة
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('تم نسخ الرابط المباشر بنجاح');
+            }).catch(() => {
+                showToast('تعذر النسخ تلقائياً');
+            });
+        }
+
+        // جلب قائمة الملفات من الباكت
+        function fetchBucketFiles() {
+            const container = document.getElementById('filesContainer');
+            container.innerHTML = `
+                <div class="text-center py-6 text-slate-500 text-xs">
+                    <i class="fa-solid fa-spinner fa-spin text-lg mb-2 block"></i>
+                    جاري التحديث...
+                </div>`;
+
+            s3.listObjectsV2({ Prefix: 'videos/' }, (err, data) => {
+                if (err) {
+                    container.innerHTML = `<div class="text-rose-400 text-center text-xs py-4">فشل تحميل الملفات: ${err.message}</div>`;
+                    return;
+                }
+
+                const files = (data.Contents || []).filter(item => item.Size > 0);
+                document.getElementById('filesCount').innerText = `${files.length} ملف`;
+
+                if (files.length === 0) {
+                    container.innerHTML = `<div class="text-slate-500 text-center text-xs py-6">لا توجد فيديوهات مرفوعة حتى الآن.</div>`;
+                    return;
+                }
+
+                // الترتيب من الأحدث إلى الأقدم
+                files.sort((a, b) => new Date(b.LastModified) - new Date(a.LastModified));
+
+                let html = '';
+                files.forEach(file => {
+                    const directUrl = `https://${S3_CONFIG.bucketName}.${S3_CONFIG.endpoint}/${encodeURI(file.Key)}`;
+                    const shortName = file.Key.replace('videos/', '');
+
+                    html += `
+                        <div class="bg-slate-950/60 hover:bg-slate-950 border border-slate-800/80 rounded-xl p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 transition">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <div class="text-blue-400 bg-blue-500/10 p-2.5 rounded-lg shrink-0">
+                                    <i class="fa-solid fa-video text-sm"></i>
+                                </div>
+                                <div class="truncate">
+                                    <div class="font-semibold text-slate-200 text-xs md:text-sm truncate" title="${shortName}">${shortName}</div>
+                                    <div class="text-[11px] text-slate-500 flex items-center gap-3 mt-0.5">
+                                        <span>${formatBytes(file.Size)}</span>
+                                        <span>•</span>
+                                        <span>${new Date(file.LastModified).toLocaleDateString('ar-EG')}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 self-end md:self-auto shrink-0">
+                                <button onclick="copyToClipboard('${directUrl}')" class="bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 border border-slate-700">
+                                    <i class="fa-regular fa-copy"></i>
+                                    <span>نسخ الرابط</span>
+                                </button>
+                                <button onclick="deleteFile('${file.Key}')" class="bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg text-xs transition border border-slate-700" title="حذف الفيديو">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            });
+        }
+
+        // حذف فيديو من الـ Bucket
+        function deleteFile(key) {
+            if (!confirm(`هل أنت متأكد من حذف الملف التالي؟\n${key}`)) return;
+
+            s3.deleteObject({ Key: key }, (err) => {
+                if (err) {
+                    alert('تعذر حذف الملف: ' + err.message);
+                } else {
+                    showToast('تم حذف الملف بنجاح');
+                    fetchBucketFiles();
+                }
+            });
+        }
+
+        // دعم السحب والإفلات في منطقة الاختيار
+        const dropZone = document.getElementById('dropZone');
+        ['dragenter', 'dragover'].forEach(name => {
+            dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.add('border-blue-500', 'bg-blue-950/20'); });
+        });
+        ['dragleave', 'drop'].forEach(name => {
+            dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.remove('border-blue-500', 'bg-blue-950/20'); });
+        });
+        dropZone.addEventListener('drop', (e) => {
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                document.getElementById('fileInput').files = e.dataTransfer.files;
+                onFileSelected(document.getElementById('fileInput'));
+            }
+        });
+
+        // تشغيل الجلب التلقائي عند فتح الصفحة
+        window.addEventListener('DOMContentLoaded', fetchBucketFiles);
+    </script>
 </body>
 </html>
