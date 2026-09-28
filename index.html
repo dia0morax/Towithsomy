@@ -279,8 +279,9 @@
                     return;
                 }
 
-                const friendlyUrl = `https://${S3_CONFIG.bucketName}.${S3_CONFIG.endpoint}/${encodeURI(targetKey)}`;
+                const friendlyUrl = `https://twilight-flower-0bcc.dia2001amirca1.workers.dev/${encodeURI(targetKey)}`;
                 document.getElementById('latestUrlInput').value = friendlyUrl;
+
                 document.getElementById('successCard').classList.remove('hidden');
                 showToast('اكتمل الرفع بنجاح وبسرعة مستقرة!');
                 fetchBucketFiles();
@@ -364,8 +365,9 @@
 
                 let html = '';
                 files.forEach(file => {
-                    const directUrl = `https://${S3_CONFIG.bucketName}.${S3_CONFIG.endpoint}/${encodeURI(file.Key)}`;
+                    const directUrl = `https://twilight-flower-0bcc.dia2001amirca1.workers.dev/${encodeURI(file.Key)}`;
                     const shortName = file.Key.replace('videos/', '');
+
 
                     html += `
                         <div class="bg-slate-950/60 hover:bg-slate-950 border border-slate-800/80 rounded-xl p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 transition">
