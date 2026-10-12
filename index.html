@@ -498,8 +498,15 @@
             }
         });
 
-        // تشغيل الجلب التلقائي عند فتح الصفحة
-        window.addEventListener('DOMContentLoaded', fetchBucketFiles);
+        // تشغيل الجلب التلقائي وضمان استقرار الرفع في تطبيق سطح المكتب
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchBucketFiles();
+            // طلب استمرار الذاكرة ومنع النظام من إيقاف الرفع
+            if (navigator.storage && navigator.storage.persist) {
+                navigator.storage.persist().catch(() => {});
+            }
+        });
+
     </script>
 </body>
 </html>
