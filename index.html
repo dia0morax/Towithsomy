@@ -6,6 +6,9 @@
     <title>Studio Video Cloud - إدارة ورفع الفيديو السريع</title>
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1408.0.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
@@ -154,6 +157,22 @@
 
         const s3 = new AWS.S3({ params: { Bucket: S3_CONFIG.bucketName } });
 
+        // تهيئة فايربيس للمزامنة التلقائية مع موقع المشاهدة
+        const firebaseConfig = {
+            apiKey: "AIzaSyAs57mg-SUx-QFeYsqky4SIvph71n5uB5w",
+            authDomain: "with-somy.firebaseapp.com",
+            databaseURL: "https://with-somy-default-rtdb.firebaseio.com",
+            projectId: "with-somy",
+            storageBucket: "with-somy.firebasestorage.app",
+            messagingSenderId: "925753610772",
+            appId: "1:925753610772:web:1c1c7784d6f5c686d4d01"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+
         // متغيرات التحكم في الرفع
         let currentUpload = null;
         let selectedFile = null;
@@ -282,10 +301,23 @@
                 const friendlyUrl = `https://twilight-flower-0bcc.dia2001amirca1.workers.dev/${encodeURI(targetKey)}`;
                 document.getElementById('latestUrlInput').value = friendlyUrl;
 
+                // إرسال بيانات الفيديو تلقائياً إلى فايربيس ليتعرف عليه موقع المشاهدة
+                try {
+                    if (typeof db !== 'undefined') {
+                        db.ref('availableVideos').push({
+                            title: selectedFile.name,
+                            url: friendlyUrl,
+                            size: selectedFile.size,
+                            timestamp: Date.now()
+                        });
+                    }
+                } catch(e) { console.error(e); }
+
                 document.getElementById('successCard').classList.remove('hidden');
                 showToast('اكتمل الرفع بنجاح وبسرعة مستقرة!');
                 fetchBucketFiles();
             });
+
         }
 
 
