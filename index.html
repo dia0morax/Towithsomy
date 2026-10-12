@@ -395,9 +395,22 @@
                 // الترتيب من الأحدث إلى الأقدم
                 files.sort((a, b) => new Date(b.LastModified) - new Date(a.LastModified));
 
-                // مزامنة كافة فيديوهات الباكت تلقائياً مع فايربيس لتظهر في موقع المشاهدة فوراً
-                if (typeof db !== 'undefined' && files.length > 0) {
+                // مزامنة الفيديوهات وإزالة المنتهية تلقائياً من فايربيس إذا حُذفت من الباكت بعد يومين
+                if (typeof db !== 'undefined') {
                     db.ref('availableVideos').once('value').then(snap => {
+                        const currentBucketUrls = files.map(file => `https://twilight-flower-0bcc.dia2001amirca1.workers.dev/${encodeURI(file.Key)}`);
+
+                        // 1. حذف الفيديوهات التي لم تعد موجودة في الباكت لتفريغ مساحات الأجهزة تلقائياً
+                        if (snap.exists()) {
+                            snap.forEach(c => {
+                                const item = c.val();
+                                if (!currentBucketUrls.includes(item.url)) {
+                                    db.ref('availableVideos/' + c.key).remove();
+                                }
+                            });
+                        }
+
+                        // 2. إضافة أي فيديو موجود في الباكت وغير مسجل في فايربيس
                         const existingUrls = [];
                         if (snap.exists()) {
                             snap.forEach(c => { existingUrls.push(c.val().url); });
@@ -416,6 +429,7 @@
                         });
                     });
                 }
+
 
                 let html = '';
                 files.forEach(file => {
