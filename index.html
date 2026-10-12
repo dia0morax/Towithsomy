@@ -395,6 +395,28 @@
                 // الترتيب من الأحدث إلى الأقدم
                 files.sort((a, b) => new Date(b.LastModified) - new Date(a.LastModified));
 
+                // مزامنة كافة فيديوهات الباكت تلقائياً مع فايربيس لتظهر في موقع المشاهدة فوراً
+                if (typeof db !== 'undefined' && files.length > 0) {
+                    db.ref('availableVideos').once('value').then(snap => {
+                        const existingUrls = [];
+                        if (snap.exists()) {
+                            snap.forEach(c => { existingUrls.push(c.val().url); });
+                        }
+                        files.forEach(file => {
+                            const directUrl = `https://twilight-flower-0bcc.dia2001amirca1.workers.dev/${encodeURI(file.Key)}`;
+                            const shortName = file.Key.replace('videos/', '');
+                            if (!existingUrls.includes(directUrl)) {
+                                db.ref('availableVideos').push({
+                                    title: shortName,
+                                    url: directUrl,
+                                    size: file.Size,
+                                    timestamp: new Date(file.LastModified).getTime()
+                                });
+                            }
+                        });
+                    });
+                }
+
                 let html = '';
                 files.forEach(file => {
                     const directUrl = `https://twilight-flower-0bcc.dia2001amirca1.workers.dev/${encodeURI(file.Key)}`;
@@ -402,6 +424,7 @@
 
 
                     html += `
+
                         <div class="bg-slate-950/60 hover:bg-slate-950 border border-slate-800/80 rounded-xl p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 transition">
                             <div class="flex items-center gap-3 overflow-hidden">
                                 <div class="text-blue-400 bg-blue-500/10 p-2.5 rounded-lg shrink-0">
